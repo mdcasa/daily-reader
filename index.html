@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Daily Reader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #faf9f6;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.1);
+      --border-strong: rgba(0,0,0,0.22);
+      --text-primary: #1a1a18;
+      --text-secondary: #5a5a55;
+      --text-muted: #9a9a93;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --ff-display: 'Playfair Display', Georgia, serif;
+      --ff-body: 'DM Sans', sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161614;
+        --surface: #1f1f1c;
+        --border: rgba(255,255,255,0.1);
+        --border-strong: rgba(255,255,255,0.22);
+        --text-primary: #f0ede6;
+        --text-secondary: #a8a89f;
+        --text-muted: #6a6a62;
+      }
+    }
+
+    body {
+      font-family: var(--ff-body);
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem;
+    }
+
+    .masthead {
+      border-bottom: 1.5px solid var(--border-strong);
+      padding-bottom: 1.1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .masthead-title {
+      font-family: var(--ff-display);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .masthead-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .masthead-date {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .btn {
+      font-family: var(--ff-body);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 0.5px solid var(--border-strong);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+
+    .category-nav {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+
+    .cat-btn {
+      font-family: var(--ff-body);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 0.5px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .cat-btn:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+
+    .cat-btn.active {
+      background: var(--text-primary);
+      color: var(--bg);
+      border-color: var(--text-primary);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding-bottom: 6px;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .articles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .article-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+
+    .article-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .article-source {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .article-title {
+      font-family: var(--ff-display);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.45;
+    }
+
+    .article-snippet {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .article-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: auto;
+      padding-top: 4px;
+    }
+
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 1rem;
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-top-color: var(--text-primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .all-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .progress-bar-wrap {
+      height: 2px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--text-primary);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="masthead">
+      <div class="masthead-title">The Daily Reader</div>
+      <div class="masthead-right">
+        <span class="masthead-date" id="date-display"></span>
+        <button class="btn" onclick="refreshFeed()">Refresh</button>
+      </div>
+    </div>
+
+    <div class="category-nav" id="cat-nav"></div>
+    <div class="progress-bar-wrap" id="progress-wrap" style="display:none">
+      <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+    </div>
+    <div id="feed-area"></div>
+  </div>
+
+  <script>
+    const CATEGORIES = [
+      { id: 'libraries',    label: 'Public Libraries',      query: 'public library news funding programs communities 2025 2026' },
+      { id: 'ai',           label: 'Artificial Intelligence', query: 'artificial intelligence AI news research 2025 2026' },
+      { id: 'ai-libraries', label: 'AI & Libraries',         query: 'AI artificial intelligence libraries librarians 2025 2026' },
+      { id: 'wow-druid',    label: 'WoW Druid',              query: 'World of Warcraft Druid class news changes abilities 2025 2026' },
+      { id: 'wow-tuning',   label: 'WoW Class Tuning',       query: 'World of Warcraft class tuning balance hotfix patch notes 2025 2026' },
+    ];
+
+    let activeCategory = 'all';
+    let cache = {};
+    let loadedCount = 0;
+
+    function setDate() {
+      const d = new Date();
+      document.getElementById('date-display').textContent = d.toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+
+    function renderNav() {
+      const allCats = [{ id: 'all', label: 'All' }, ...CATEGORIES];
+      document.getElementById('cat-nav').innerHTML = allCats.map(c =>
+        `<button class="cat-btn${activeCategory === c.id ? ' active' : ''}" onclick="switchCategory('${c.id}')">${c.label}</button>`
+      ).join('');
+    }
+
+    function switchCategory(id) {
+      activeCategory = id;
+      renderNav();
+      renderFeed();
+    }
+
+    function renderArticles(articles) {
+      if (!articles || articles.length === 0) {
+        return `<div class="empty-state">No stories found. Try refreshing.</div>`;
+      }
+      return `<div class="articles-grid">${articles.map(a => `
+        <a class="article-card" href="${a.url || '#'}" target="_blank" rel="noopener noreferrer">
+          <div class="article-source">${a.source || ''}</div>
+          <div class="article-title">${a.title}</div>
+          <div class="article-snippet">${a.snippet}</div>
+          <div class="article-date">${a.date || ''}</div>
+        </a>`).join('')}</div>`;
+    }
+
+    function renderFeed() {
+      const area = document.getElementById('feed-area');
+      if (activeCategory === 'all') {
+        const loaded = CATEGORIES.filter(c => cache[c.id]);
+        if (loaded.length === 0) {
+          area.innerHTML = `<div class="loading-state"><div class="spinner"></div><div class="loading-text">Loading your feeds…</div></div>`;
+          return;
+        }
+        area.innerHTML = `<div class="all-grid">${loaded.map(c => `
+          <div>
+            <div class="section-label">${c.label}</div>
+            ${renderArticles(cache[c.id])}
+          </div>`).join('')}</div>`;
+      } else {
+        const cat = CATEGORIES.find(c => c.id === activeCategory);
+        if (cache[activeCategory]) {
+          area.innerHTML = `<div class="section-label">${cat.label}</div>${renderArticles(cache[activeCategory])}`;
+        } else {
+          area.innerHTML = `<div class="loading-state"><div class="spinner"></div><div class="loading-text">Fetching ${cat.label} news…</div></div>`;
+          fetchCategory(cat).then(() => renderFeed());
+        }
+      }
+    }
+
+    async function fetchCategory(cat) {
+      try {
+        const resp = await fetch('/api/news', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: cat.query, label: cat.label }),
+        });
+        const data = await resp.json();
+        cache[cat.id] = data.articles || [];
+      } catch (e) {
+        cache[cat.id] = [];
+      }
+      loadedCount++;
+      const pct = Math.round((loadedCount / CATEGORIES.length) * 100);
+      document.getElementById('progress-bar').style.width = pct + '%';
+      if (loadedCount >= CATEGORIES.length) {
+        setTimeout(() => {
+          document.getElementById('progress-wrap').style.display = 'none';
+        }, 400);
+      }
+      if (activeCategory === 'all') renderFeed();
+    }
+
+    async function fetchAll() {
+      loadedCount = 0;
+      document.getElementById('progress-wrap').style.display = 'block';
+      document.getElementById('progress-bar').style.width = '0%';
+      await Promise.all(CATEGORIES.map(c => fetchCategory(c)));
+      renderFeed();
+    }
+
+    function refreshFeed() {
+      if (activeCategory === 'all') {
+        cache = {};
+        fetchAll();
+      } else {
+        delete cache[activeCategory];
+        renderFeed();
+        const cat = CATEGORIES.find(c => c.id === activeCategory);
+        fetchCategory(cat).then(() => renderFeed());
+      }
+    }
+
+    setDate();
+    renderNav();
+    renderFeed();
+    fetchAll();
+  </script>
+</body>
+</html>
